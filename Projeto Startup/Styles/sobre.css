@@ -1874,6 +1874,11 @@ a.bton {
         width: 300px;
         height: 300px;
     }
+    
+    .imagemtopico img {
+        width: 300px;
+        height: 300px;
+    }
 
     .container {
         display: flex;
