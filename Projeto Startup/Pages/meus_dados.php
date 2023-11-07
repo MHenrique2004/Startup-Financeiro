@@ -1,4 +1,14 @@
-<!DOCTYPE html>
+<?php
+
+session_start();
+include('../php/conn.php');
+include('../php/validaLogin.php');
+
+$id_user = $_SESSION['id'];
+
+?>
+
+<DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -28,21 +38,21 @@
         <div style="background-color: linear-gradient(45deg, #FF5370, #ff869a) ;" class="box-info-one">
             <div class="info-text">
                 <h3>Dinheiro Total</h3>
-                <p>R$ 100.000,00</p>
+                <p>R$ <?php echo $_SESSION['total']; ?></p>
             </div>
             <i class="fa-solid fa-money-check-dollar"></i>
         </div>
         <div class="box-info-two">
             <div class="info-text">
                 <h3>Dinheiro Gasto</h3>
-                <p>R$ 100.000,00</p>
+                <p>R$ <?php echo $_SESSION['gasto']; ?></p>
             </div>
             <i class="fa-solid fa-money-check-dollar"></i>
         </div>
         <div class="box-info-three">
             <div class="info-text">
                 <h3>Objetivo</h3>
-                <p>R$ 100.000,00</p>
+                <p>R$ <?php echo $_SESSION['objetivo']; ?></p>
             </div>
             <i class="fa-solid fa-sack-dollar"></i>
         </div>
@@ -60,19 +70,39 @@
       function drawChart() {
 
         var data = google.visualization.arrayToDataTable([
-          ['Gastos', 'Dias'],
-          ['Aluguel',     700],
-          ['Cartão',      200],
-          ['Alimentação',  500],
-          ['Plano de Saúde', 300],
-          ['Energia',    120],
-          ['Água', 60],
-          ['Objetivos Pessoais', 100],
+          ['Gastos', 'Valor'],
+
+          <?php
+  
+            $sql2 = "SELECT * FROM dados WHERE dia = (SELECT MAX(dia) FROM dados WHERE id_usuario = '$id_user')";
+            $busca2 = mysqli_query($conn, $sql2);
+            $dados2 = mysqli_fetch_array($busca2);
+
+            if ($dados2 = mysqli_fetch_array($busca2)) {
+              $aluguel = $dados2['aluguel'];
+              $cartao = $dados2['cartao'];
+              $alimentacao = $dados2['alimentacao'];
+              $saude = $dados2['saude'];
+              $energia = $dados2['energia'];
+              $agua = $dados2['agua'];
+              $objtv = $dados2['objtv'];
+
+        ?>
+          
+          ['Aluguel', <?php echo $aluguel ?>],
+          ['Cartão', <?php echo $cartao ?>],
+          ['Alimentação', <?php echo $alimentacao ?>],
+          ['Plano de Saúde', <?php echo $saude ?>],
+          ['Energia', <?php echo $energia ?>],
+          ['Água', <?php echo $agua ?>],
+          ['Objetivos Pessoais', <?php echo $objtv ?>],
+
+        <?php } ?>
 
         ]);
 
         var options = {
-          title: ''
+          title: 'Gastos em %'
         };
 
         var chart = new google.visualization.PieChart(document.getElementById('piechart'));
@@ -89,18 +119,29 @@
   
         function drawChart() {
           var data = google.visualization.arrayToDataTable([
-            ['Year', 'Com Investimento', 'Sem Investimento'],
-            ['2023',  1000,       1001],
-            ['2024',  1500,       1001],
-            ['2025',  3000,       1001],
-            ['2026',  6000,       1001],
-            ['2027',  12000,       1001],
-            ['2028',  24000,       1001],
-            ['2029',  48000,       1001]
+            ['Data', 'Gasto',{role: 'annotation'} ],
+            
+            <?php
+
+
+              $sql1 = "SELECT dia, gastos FROM dados WHERE id_usuario = '$id_user' ";
+              $busca1 = mysqli_query($conn,$sql1);
+
+              while ($dados1 = mysqli_fetch_array($busca1)){
+                $dia = $dados1['dia'];
+                $gastos = $dados1['gastos'];
+
+            ?>
+            ['<?php echo $dia ?>', <?php echo $gastos ?>,<?php echo $gastos ?>],
+            
+                <?php } ?>
+
+
+
           ]);
   
           var options = {
-            title: '',
+            title: 'Gastos x Dia',
             curveType: 'function',
             legend: { position: 'bottom' }
           };
@@ -110,44 +151,6 @@
           chart.draw(data, options);
         }
       </script>
-
-<!-- Grafico Barras -->
-
-<script type="text/javascript">
-    google.charts.load("current", {packages:['corechart']});
-    google.charts.setOnLoadCallback(drawChart);
-    function drawChart() {
-      var data = google.visualization.arrayToDataTable([
-        ["Element", "Density", { role: "style" } ],
-        ["Aluguel", 700, "#250902"],
-        ["Cartão", 200, "#38040e"],
-        ["Alimentação", 500, "#4e0911"],
-        ["Plano de Saúde", 300, "color: #720e14"],
-        ["Energia", 120, "color: #971b22"],
-        ["Água", 60, "color: #ad2831"],
-        ["Objetivos Pessoais", 100, "color: #b43c44"]
-      ]);
-
-      var view = new google.visualization.DataView(data);
-      view.setColumns([0, 1,
-                       { calc: "stringify",
-                         sourceColumn: 1,
-                         type: "string",
-                         role: "annotation" },
-                       2]);
-
-      var options = {
-        title: "",
-        width: 600,
-        height: 400,
-        bar: {groupWidth: "95%"},
-        legend: { position: "none" },
-      };
-      var chart = new google.visualization.ColumnChart(document.getElementById("columnchart_values"));
-      chart.draw(view, options);
-  }
-  </script>
-
 
 <script type="text/javascript">
     google.charts.load('current', {'packages':['table']});
@@ -181,7 +184,11 @@
         <!-- HTML - Gráfico Pizza -->
         <div class="graficos-1">
             <div class="grafico-pizza">
-                <h1 id="text-1">Gráfico Pizza</h1>
+              <form action="" method="post" id="formulario-pizza">
+                <a id="bot-1" type="submit" value="clique" name="butao-1" href="../php/passa_mes.php"> < </a>
+                <h1 id="text-1"> <?php echo $dia ?></h1>
+                <a id="butaozinho" type="submit" value="clique" name="butao-2" href="../Pages/meus_dados.php"> > </a>
+              </form>
                 <div id="piechart" style="width: 700px; height: 500px;"></div>
             </div>
 
@@ -191,15 +198,10 @@
             </div>
         </div>
 
+
         <div class="graficos-2">
             <div class="grafico-coluna">
-                <h1 id="text-2">Gráfico de Colunas</h1>
-                <div id="columnchart_values" style="width: 700px; height: 500px;"></div>
-            </div>
-
-            <div class="grafico-coluna">
-                <h1 id="text-2">Gráfico Tabela</h1>
-                <div id="table_div"></div>
+                      <div id="table_div" style="width: 600px; height: 500px;"></div>
             </div>
         </div>
 
